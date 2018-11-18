@@ -5,20 +5,19 @@ import static modelo.Utileria.esNumero;
 import static modelo.Utileria.escribir;
 
 import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.TextArea;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.print.attribute.TextSyntax;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -27,10 +26,10 @@ import javax.swing.SwingConstants;
 import com.toedter.calendar.JDateChooser;
 
 import modelo.Conexion;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 
-public class RegistroProducto extends JFrame {
+public class RegistroProducto extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 	private JTextField idProducto;
@@ -45,231 +44,165 @@ public class RegistroProducto extends JFrame {
 	private JCheckBox chckbxFechaAcual_1;
 	private JDateChooser dateChooser;
 
-	public RegistroProducto(Conexion conexion) {
+	public RegistroProducto(JFrame fa, Conexion conexion) {
+		super(fa, true);
 		this.contadorProductos = conexion.getIDProductos();
 		this.conexion = conexion;
 		setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\Isaac\\Desktop\\fondo.jpg"));
 		setResizable(false);
-		setSize(600, 800);
+		setSize(580, 500);
 		setTitle("Registro de Productos CASA RAIZ");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.setLocationRelativeTo(null);
-		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] { 1, 2, 3, 91, 4, 5, 8, 10, 11, 12, 17 };
-		gridBagLayout.rowHeights = new int[] { 0, 1, 2, 0, 3, 34, 0, 6, 7, 0, 8, 9, 0, 10, 11, 0, 12, 13, 0, 14, 15, 0,
-				16, 17, 0, 18, 19, 0, 149, 21, 21 };
-		gridBagLayout.columnWeights = new double[] { 0.0, 0.0, 0.0, 1.0 };
-		gridBagLayout.rowWeights = new double[] { Double.MIN_VALUE, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-				0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		getContentPane().setLayout(gridBagLayout);
+		getContentPane().setLayout(null);
 
-		JLabel lblIdProdcto = new JLabel("ID Prodcto");
-		GridBagConstraints gbc_lblIdProdcto = new GridBagConstraints();
-		gbc_lblIdProdcto.anchor = GridBagConstraints.WEST;
-		gbc_lblIdProdcto.insets = new Insets(0, 0, 5, 5);
-		gbc_lblIdProdcto.gridx = 3;
-		gbc_lblIdProdcto.gridy = 3;
-		getContentPane().add(lblIdProdcto, gbc_lblIdProdcto);
+		JPanel panel_1 = new JPanel();
+		panel_1.setBorder(new TitledBorder(null, "Clave Prodcto", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_1.setBounds(45, 50, 191, 43);
+		getContentPane().add(panel_1);
+		panel_1.setLayout(null);
 
 		idProducto = new JTextField();
+		idProducto.setBounds(6, 16, 179, 20);
+		panel_1.add(idProducto);
 		idProducto.setEnabled(false);
 		idProducto.setText(String.valueOf(contadorProductos));
-		GridBagConstraints gbc_idProducto = new GridBagConstraints();
-		gbc_idProducto.insets = new Insets(0, 0, 5, 5);
-		gbc_idProducto.fill = GridBagConstraints.HORIZONTAL;
-		gbc_idProducto.gridx = 3;
-		gbc_idProducto.gridy = 5;
-		getContentPane().add(idProducto, gbc_idProducto);
 		idProducto.setColumns(10);
 
-		JLabel lblNombre = new JLabel("Nombre");
-		GridBagConstraints gbc_lblNombre = new GridBagConstraints();
-		gbc_lblNombre.anchor = GridBagConstraints.WEST;
-		gbc_lblNombre.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNombre.gridx = 3;
-		gbc_lblNombre.gridy = 6;
-		getContentPane().add(lblNombre, gbc_lblNombre);
+		JPanel panel_2 = new JPanel();
+		panel_2.setBorder(new TitledBorder(null, "Nombre", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_2.setBounds(298, 50, 191, 43);
+		getContentPane().add(panel_2);
+		panel_2.setLayout(null);
 
 		textNombre = new JTextField();
+		textNombre.setBounds(6, 16, 179, 20);
+		panel_2.add(textNombre);
 		textNombre.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				textNombre.setBackground(Color.WHITE);
 			}
 		});
-
-		GridBagConstraints gbc_textNombre = new GridBagConstraints();
-		gbc_textNombre.insets = new Insets(0, 0, 5, 5);
-		gbc_textNombre.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textNombre.gridx = 3;
-		gbc_textNombre.gridy = 7;
-		getContentPane().add(textNombre, gbc_textNombre);
 		textNombre.setColumns(10);
 
-		JLabel lblNewLabel = new JLabel("Marca");
-		lblNewLabel.setVerticalAlignment(SwingConstants.BOTTOM);
-		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
-		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel.gridx = 3;
-		gbc_lblNewLabel.gridy = 9;
-		getContentPane().add(lblNewLabel, gbc_lblNewLabel);
+		JPanel panel = new JPanel();
+		panel.setBorder(new TitledBorder(null, "Marca", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel.setBounds(45, 128, 191, 43);
+		getContentPane().add(panel);
+		panel.setLayout(null);
 
 		textMarca = new JTextField();
+		textMarca.setBounds(6, 16, 179, 20);
+		panel.add(textMarca);
 		textMarca.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				textMarca.setBackground(Color.WHITE);
 			}
 		});
-		GridBagConstraints gbc_textMarca = new GridBagConstraints();
-		gbc_textMarca.insets = new Insets(0, 0, 5, 5);
-		gbc_textMarca.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textMarca.gridx = 3;
-		gbc_textMarca.gridy = 10;
-		getContentPane().add(textMarca, gbc_textMarca);
 		textMarca.setColumns(10);
 
-		JLabel lblColor = new JLabel("Color");
-		GridBagConstraints gbc_lblColor = new GridBagConstraints();
-		gbc_lblColor.anchor = GridBagConstraints.WEST;
-		gbc_lblColor.insets = new Insets(0, 0, 5, 5);
-		gbc_lblColor.gridx = 3;
-		gbc_lblColor.gridy = 12;
-		getContentPane().add(lblColor, gbc_lblColor);
+		JPanel panel_3 = new JPanel();
+		panel_3.setBorder(new TitledBorder(null, "Color", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_3.setBounds(298, 128, 191, 43);
+		getContentPane().add(panel_3);
+		panel_3.setLayout(null);
 
 		textColor = new JTextField();
+		textColor.setBounds(6, 16, 179, 20);
+		panel_3.add(textColor);
 		textColor.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				textColor.setBackground(Color.WHITE);
 			}
 		});
-		GridBagConstraints gbc_textColor = new GridBagConstraints();
-		gbc_textColor.insets = new Insets(0, 0, 5, 5);
-		gbc_textColor.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textColor.gridx = 3;
-		gbc_textColor.gridy = 13;
-		getContentPane().add(textColor, gbc_textColor);
 		textColor.setColumns(10);
 
-		JLabel lblMaterial = new JLabel("Material");
-		GridBagConstraints gbc_lblMaterial = new GridBagConstraints();
-		gbc_lblMaterial.anchor = GridBagConstraints.WEST;
-		gbc_lblMaterial.insets = new Insets(0, 0, 5, 5);
-		gbc_lblMaterial.gridx = 3;
-		gbc_lblMaterial.gridy = 15;
-		getContentPane().add(lblMaterial, gbc_lblMaterial);
+		JPanel panel_4 = new JPanel();
+		panel_4.setBorder(new TitledBorder(null, "Material", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_4.setBounds(45, 208, 191, 43);
+		getContentPane().add(panel_4);
+		panel_4.setLayout(null);
 
 		textMaterial = new JTextField();
+		textMaterial.setBounds(6, 16, 179, 20);
+		panel_4.add(textMaterial);
 		textMaterial.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				textMaterial.setBackground(Color.WHITE);
 			}
 		});
-		GridBagConstraints gbc_textMaterial = new GridBagConstraints();
-		gbc_textMaterial.insets = new Insets(0, 0, 5, 5);
-		gbc_textMaterial.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textMaterial.gridx = 3;
-		gbc_textMaterial.gridy = 16;
-		getContentPane().add(textMaterial, gbc_textMaterial);
 		textMaterial.setColumns(10);
 
-		JLabel lblFechaDeIngreso = new JLabel("Fecha de Ingreso");
-		GridBagConstraints gbc_lblFechaDeIngreso = new GridBagConstraints();
-		gbc_lblFechaDeIngreso.anchor = GridBagConstraints.WEST;
-		gbc_lblFechaDeIngreso.insets = new Insets(0, 0, 5, 5);
-		gbc_lblFechaDeIngreso.gridx = 3;
-		gbc_lblFechaDeIngreso.gridy = 18;
-		getContentPane().add(lblFechaDeIngreso, gbc_lblFechaDeIngreso);
+		JPanel panel_6 = new JPanel();
+		panel_6.setBorder(
+				new TitledBorder(null, "Fecha de Ingreso", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_6.setBounds(45, 283, 284, 43);
+		getContentPane().add(panel_6);
+		panel_6.setLayout(null);
 
 		dateChooser = new JDateChooser();
+		dateChooser.setBounds(6, 16, 178, 20);
+		panel_6.add(dateChooser);
 		dateChooser.getCalendarButton().setToolTipText("seleccionar fecha");
-		GridBagConstraints gbc_dateChooser = new GridBagConstraints();
-		gbc_dateChooser.insets = new Insets(0, 0, 5, 5);
-		gbc_dateChooser.fill = GridBagConstraints.BOTH;
-		gbc_dateChooser.gridx = 3;
-		gbc_dateChooser.gridy = 19;
-		getContentPane().add(dateChooser, gbc_dateChooser);
-
-		GridBagConstraints gbc_chckbxFechaAcual = new GridBagConstraints();
-		gbc_chckbxFechaAcual.gridheight = 2;
-		gbc_chckbxFechaAcual.insets = new Insets(0, 0, 5, 5);
-		gbc_chckbxFechaAcual.gridx = 5;
-		gbc_chckbxFechaAcual.gridy = 19;
 
 		chckbxFechaAcual_1 = new JCheckBox("Fecha Acual");
+		chckbxFechaAcual_1.setBounds(190, 16, 83, 23);
+		panel_6.add(chckbxFechaAcual_1);
 		chckbxFechaAcual_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dateChooser.setEnabled(!chckbxFechaAcual_1.isSelected());
 			}
 		});
 
-		getContentPane().add(chckbxFechaAcual_1, gbc_chckbxFechaAcual);
-		JLabel lblPrecio = new JLabel("Precio");
-		GridBagConstraints gbc_lblPrecio = new GridBagConstraints();
-		gbc_lblPrecio.anchor = GridBagConstraints.WEST;
-		gbc_lblPrecio.insets = new Insets(0, 0, 5, 5);
-		gbc_lblPrecio.gridx = 3;
-		gbc_lblPrecio.gridy = 21;
-		getContentPane().add(lblPrecio, gbc_lblPrecio);
+		JPanel panel_5 = new JPanel();
+		panel_5.setBorder(new TitledBorder(null, "Precio", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_5.setBounds(298, 208, 191, 43);
+		getContentPane().add(panel_5);
+		panel_5.setLayout(null);
 
 		textPrecio = new JTextField();
+		textPrecio.setBounds(6, 16, 179, 20);
+		panel_5.add(textPrecio);
 		textPrecio.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				textPrecio.setBackground(Color.WHITE);
 			}
 		});
-		GridBagConstraints gbc_textPrecio = new GridBagConstraints();
-		gbc_textPrecio.insets = new Insets(0, 0, 5, 5);
-		gbc_textPrecio.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textPrecio.gridx = 3;
-		gbc_textPrecio.gridy = 22;
-		getContentPane().add(textPrecio, gbc_textPrecio);
 		textPrecio.setColumns(10);
 
-		JLabel lblCantidad = new JLabel("Cantidad");
-		GridBagConstraints gbc_lblCantidad = new GridBagConstraints();
-		gbc_lblCantidad.anchor = GridBagConstraints.WEST;
-		gbc_lblCantidad.insets = new Insets(0, 0, 5, 5);
-		gbc_lblCantidad.gridx = 3;
-		gbc_lblCantidad.gridy = 24;
-		getContentPane().add(lblCantidad, gbc_lblCantidad);
+		JPanel panel_7 = new JPanel();
+		panel_7.setBorder(new TitledBorder(null, "Cantidad", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_7.setBounds(354, 283, 135, 43);
+		getContentPane().add(panel_7);
+		panel_7.setLayout(null);
 
 		textCantidad = new JTextField();
+		textCantidad.setBounds(6, 16, 121, 20);
+		panel_7.add(textCantidad);
 		textCantidad.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				textCantidad.setBackground(Color.WHITE);
 			}
 		});
-		GridBagConstraints gbc_textCantidad = new GridBagConstraints();
-		gbc_textCantidad.insets = new Insets(0, 0, 5, 5);
-		gbc_textCantidad.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textCantidad.gridx = 3;
-		gbc_textCantidad.gridy = 25;
-		getContentPane().add(textCantidad, gbc_textCantidad);
 		textCantidad.setColumns(10);
 
 		JLabel lblCaracteristicasEspecificas = new JLabel("Caracteristicas Especificas");
-		GridBagConstraints gbc_lblCaracteristicasEspecificas = new GridBagConstraints();
-		gbc_lblCaracteristicasEspecificas.anchor = GridBagConstraints.WEST;
-		gbc_lblCaracteristicasEspecificas.insets = new Insets(0, 0, 5, 5);
-		gbc_lblCaracteristicasEspecificas.gridx = 3;
-		gbc_lblCaracteristicasEspecificas.gridy = 27;
-		getContentPane().add(lblCaracteristicasEspecificas, gbc_lblCaracteristicasEspecificas);
+		lblCaracteristicasEspecificas.setBounds(51, 361, 126, 14);
+		getContentPane().add(lblCaracteristicasEspecificas);
 
 		TextArea textAreaCaracteristicas = new TextArea();
+		textAreaCaracteristicas.setBounds(51, 382, 278, 80);
 		textAreaCaracteristicas.setRows(10);
-		GridBagConstraints gbc_textAreaCaracteristicas = new GridBagConstraints();
-		gbc_textAreaCaracteristicas.insets = new Insets(0, 0, 5, 5);
-		gbc_textAreaCaracteristicas.gridx = 3;
-		gbc_textAreaCaracteristicas.gridy = 28;
-		getContentPane().add(textAreaCaracteristicas, gbc_textAreaCaracteristicas);
+		getContentPane().add(textAreaCaracteristicas);
 
 		JButton btnRegisroProducto = new JButton("Registrar");
+		btnRegisroProducto.setBounds(422, 400, 90, 23);
 		btnRegisroProducto.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (validarFormularioRegistroProducto()) {
@@ -286,11 +219,7 @@ public class RegistroProducto extends JFrame {
 				}
 			}
 		});
-		GridBagConstraints gbc_btnRegisroProducto = new GridBagConstraints();
-		gbc_btnRegisroProducto.insets = new Insets(0, 0, 5, 5);
-		gbc_btnRegisroProducto.gridx = 7;
-		gbc_btnRegisroProducto.gridy = 29;
-		getContentPane().add(btnRegisroProducto, gbc_btnRegisroProducto);
+		getContentPane().add(btnRegisroProducto);
 	}
 
 	private boolean registroProducto(TextArea t) {
@@ -298,7 +227,6 @@ public class RegistroProducto extends JFrame {
 
 		SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
 		String fechaa = chckbxFechaAcual_1.isSelected() ? format.format(curDate) : format.format(dateChooser.getDate());
-		escribir(fechaa);
 
 		String consulta = "INSERT INTO `productos`(`id_producto`, `marca`, `color`, `material`, `detalles especificos`, `fecha Ingreso`, `estado`, `precio`, `nombre`,`fecha salida` ) "
 				+ "VALUES (" + contadorProductos++ + ",'" + textMarca.getText() + "','" + textColor.getText() + "','"
@@ -367,5 +295,4 @@ public class RegistroProducto extends JFrame {
 
 		return ok;
 	}
-
 }

@@ -21,7 +21,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
 
 import modelo.Conexion;
 import modelo.Utileria;
@@ -29,7 +28,6 @@ import modelo.Utileria;
 public class VistaPrincipalAdmin extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	private JDialog busqueda = null;
 	private JTable tabla;
 
 	public VistaPrincipalAdmin(Conexion conexion) {
@@ -197,7 +195,7 @@ public class VistaPrincipalAdmin extends JFrame {
 		JMenuItem mntmIngresarArticulos = new JMenuItem("Ingresar Articulos");
 		mntmIngresarArticulos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				new RegistroProducto(conexion).setVisible(true);
+				new RegistroProducto(re(), conexion).setVisible(true);
 			}
 		});
 		mnInventario.add(mntmIngresarArticulos);
@@ -232,7 +230,7 @@ public class VistaPrincipalAdmin extends JFrame {
 		JMenuItem mntmBuscar = new JMenuItem("Buscar");
 		mntmBuscar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				busqueda = new VentanaBusquedaInventario(re(), conexion);
+				new VentanaBusquedaInventario(re(), conexion);
 
 			}
 		});
