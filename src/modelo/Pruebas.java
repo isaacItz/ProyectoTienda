@@ -1,32 +1,24 @@
 package modelo;
 
-import java.sql.*;
-
-import javax.swing.JOptionPane;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 public class Pruebas {
 
 	public static void main(String[] args) {
+		Conexion cn = new Conexion();
+		cn.generarConexion();
 
+		String consulta = "INSERT INTO `usuarios`(`Usuario`, `Nombre Completo`, `contraseña`, `edad`, `tipo`) VALUES "
+				+ "('juanito','fsdadlfhlkdas','jfdksa',123,'administrador')";
 		try {
-			Connection conexion = DriverManager.getConnection("jdbc:mysql://localhost/casaraiz", "root", "");
+			PreparedStatement p = cn.getPreparedStatement(consulta);
 
-			Statement s = conexion.createStatement();
-
-			String user = "juan";
-			String contra = "holamundo";
-			ResultSet rs = s.executeQuery("SELECT * FROM usuarios WHERE Usuario ='" + user + "' AND contraseña = '"
-					+ contra + "' AND tipo = 'administrador'");
-
-			if (rs.next()) {
-				JOptionPane.showMessageDialog(null,
-						rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3) + " " + "fila: " + rs.getRow(),
-						"pop", 1);
-			} else
-				JOptionPane.showMessageDialog(null, "el usuario no existe", "Eror", 0);
-
-			conexion.close();
-		} catch (Exception e) {
+			p.executeUpdate();
+		} catch (SQLIntegrityConstraintViolationException e) {
+			System.out.println("huo");
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 

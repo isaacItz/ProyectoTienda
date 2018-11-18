@@ -1,9 +1,12 @@
 package vista;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 
 import javax.swing.JFrame;
-import java.awt.Color;
+import javax.swing.JOptionPane;
+
+import modelo.Conexion;
 
 public class VistaPrincipal extends JFrame {
 
@@ -11,18 +14,19 @@ public class VistaPrincipal extends JFrame {
 
 	public VistaPrincipal() {
 
-		PanelSelecionInicio panel = new PanelSelecionInicio();
-		panel.setBackground(new Color(255, 255, 224));
-		getContentPane().add(panel, BorderLayout.CENTER);
+		Conexion conexion = new Conexion();
+		if (!conexion.generarConexion())
+			JOptionPane.showMessageDialog(null, "Error al Establecer Conexion", "Fauil Connect", 0);
+		// /// PanelInicioAdmin panel = new PanelInicioAdmin(conexion);
+		// panel.setBackground(new Color(255, 255, 224));
+		// setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		// getContentPane().add(panel, BorderLayout.CENTER);
 		this.setTitle("Casa Raiz");
 		this.setSize(600, 400);
 		this.setResizable(false);
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
-	}
 
-	public static void main(String[] args) {
-		new VistaPrincipal();
 	}
 
 }

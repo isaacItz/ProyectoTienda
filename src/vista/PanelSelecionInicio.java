@@ -52,9 +52,6 @@ public class PanelSelecionInicio extends JPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			setVisible(false);
-			PanelInicioAdmin panel = new PanelInicioAdmin();
-			add(panel);
-			panel.setVisible(true);
 			validate();
 		}
 
