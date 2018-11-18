@@ -1,5 +1,6 @@
 package vista;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -7,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.swing.BoxLayout;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -14,7 +16,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTable;
+import javax.swing.border.TitledBorder;
 
 import modelo.Conexion;
 import modelo.Utileria;
@@ -198,6 +203,24 @@ public class VistaPrincipalAdmin extends JFrame {
 		mnInventario.add(mntmEliminarArticulos);
 
 		JMenuItem mntmListarArticulos = new JMenuItem("Listar Articulos");
+		mntmListarArticulos.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+
+				try {
+					Object[] cabezera = conexion.getCamposTabla("productos");
+					Object[][] datos = conexion.getDatosTabla((ResultSet) conexion.Consulta("Select * from productos"));
+					JTable tabla = new JTable(datos, cabezera);
+					tabla.setBorder(new TitledBorder(null, "Tabla de Articulos", TitledBorder.LEADING, TitledBorder.TOP,
+							null, null));
+					getContentPane().setLayout(new BorderLayout());
+					getContentPane().add(new JScrollPane(tabla), BorderLayout.CENTER);
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+
+			}
+		});
 		mnInventario.add(mntmListarArticulos);
 
 		JMenuItem mntmBuscar = new JMenuItem("Buscar");
