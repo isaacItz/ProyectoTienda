@@ -2,15 +2,16 @@ package vista;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javax.swing.BoxLayout;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -19,6 +20,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 import modelo.Conexion;
@@ -27,7 +29,8 @@ import modelo.Utileria;
 public class VistaPrincipalAdmin extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	JDialog busqueda = null;
+	private JDialog busqueda = null;
+	private JTable tabla;
 
 	public VistaPrincipalAdmin(Conexion conexion) {
 		setForeground(Color.LIGHT_GRAY);
@@ -207,11 +210,14 @@ public class VistaPrincipalAdmin extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 
 				try {
+
 					Object[] cabezera = conexion.getCamposTabla("productos");
 					Object[][] datos = conexion.getDatosTabla((ResultSet) conexion.Consulta("Select * from productos"));
-					JTable tabla = new JTable(datos, cabezera);
-					tabla.setBorder(new TitledBorder(null, "Tabla de Articulos", TitledBorder.LEADING, TitledBorder.TOP,
-							null, null));
+					tabla = new JTable(datos, cabezera);
+					// JPanel panel = new JPanel()
+					// tabla.setBorder(new TitledBorder(null, "Tabla de Articulos",
+					// TitledBorder.LEADING, TitledBorder.TOP,
+					// null, null));
 					getContentPane().setLayout(new BorderLayout());
 					getContentPane().add(new JScrollPane(tabla), BorderLayout.CENTER);
 
@@ -234,6 +240,15 @@ public class VistaPrincipalAdmin extends JFrame {
 
 		JMenu mnVenta = new JMenu("Venta");
 		menuBar.add(mnVenta);
+
+		JLabel lblNewLabel = new JLabel("Tabla de Productos");
+		lblNewLabel.setFont(new Font("Vivaldi", Font.BOLD, 20));
+		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel.setVerticalAlignment(SwingConstants.TOP);
+		getContentPane().add(lblNewLabel, BorderLayout.NORTH);
+		// tabla = new JTable();
+		// getContentPane().add(tabla);
+
 		this.setVisible(true);
 	}
 
