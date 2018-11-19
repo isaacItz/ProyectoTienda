@@ -32,7 +32,7 @@ public class PanelInicioAdmin extends JFrame {
 		if (!conexion.generarConexion())
 			JOptionPane.showMessageDialog(null, "Error al Establecer Conexion", "Fauil Connect", 0);
 
-		new VistaPrincipalAdmin(conexion);
+		new VistaPrincipalAdmin(conexion, "isaac");
 		this.dispose();
 		this.setVisible(false);
 
@@ -79,7 +79,7 @@ public class PanelInicioAdmin extends JFrame {
 
 					if (rs.next()) {
 						if (rs.getString(5).toLowerCase().equals("administrador"))
-							new VistaPrincipalAdmin(conexion);
+							new VistaPrincipalAdmin(conexion, rs.getString(1));
 						else
 							new VistaPrincipalEmpleado(textField.getText());
 						dispose();

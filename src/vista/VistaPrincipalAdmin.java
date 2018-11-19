@@ -41,7 +41,7 @@ public class VistaPrincipalAdmin extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JTable tabla;
 
-	public VistaPrincipalAdmin(Conexion conexion) {
+	public VistaPrincipalAdmin(Conexion conexion, String nombreUser) {
 		setForeground(Color.LIGHT_GRAY);
 		setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\Isaac\\Desktop\\fondo.jpg"));
 		this.setTitle("Casa Raiz Panel ADMINISTRADOR");
@@ -301,33 +301,38 @@ public class VistaPrincipalAdmin extends JFrame {
 
 				int claveP = Utileria.leerInt("Ingrese la Clave del Producto a Vender");
 				if (conexion.existe("productos", "id_producto", String.valueOf(claveP))) {
+					if (conexion.hayExistencia(claveP)) {
+						Object[] optionsUser = new Object[] { "Ya Existe el Cliente", "Crear Nuevo Cliente",
+								"No Deseo Registar informacion" };
+						Object opcionU = JOptionPane.showInputDialog(null, "Desea Registrar la Informacion del Cliente",
+								"Elegir", JOptionPane.QUESTION_MESSAGE, null, optionsUser, optionsUser[0]);
 
-					Object[] optionsUser = new Object[] { "Ya Existe el Cliente", "Crear Nuevo Cliente",
-							"No Deseo Registar informacion" };
-					Object opcionU = JOptionPane.showInputDialog(null, "Desea Registrar la Informacion del Cliente",
-							"Elegir", JOptionPane.QUESTION_MESSAGE, null, optionsUser, optionsUser[0]);
+						switch (opcionU.toString()) {
+						case "Ya Existe el Cliente":
+							int clave = Utileria.leerInt("Digita la Clave del Cliente");
+							String clavee = conexion.getCampo("cliente", "id_cliente", "id_cliente",
+									String.valueOf(clave));
+							if (clavee != null) {
+								new VentanaVenta(conexion, claveP, clave, nombreUser, false).setVisible(true);
+							} else {
+								int op = JOptionPane.showConfirmDialog(null,
+										"El Cliente No Existe.\n ¿Desea Buscarlo?");
+								if (op == 0)
+									Utileria.escribir("Busqueda");
+							}
 
-					switch (opcionU.toString()) {
-					case "Ya Existe el Cliente":
-						int clave = Utileria.leerInt("Digita la Clave del Cliente");
-						String clavee = conexion.getCampo("cliente", "id_cliente", "id_cliente", String.valueOf(clave));
-						if (clavee != null) {
-							new VentanaVenta(conexion, clavee, claveP).setVisible(true);
-						} else {
-							int op = JOptionPane.showConfirmDialog(null, "El Cliente No Existe.\n ¿Desea Buscarlo?");
-							if (op == 0)
-								Utileria.escribir("vusqueda");
+							break;
+						case "Crear Nuevo Cliente":
+							new RegistroCliente(conexion).setVisible(true);
+							break;
+
+						case "No Deseo Registar informacion":
+							new VentanaVenta(conexion, claveP, conexion.generarClienteRnd(), nombreUser, true)
+									.setVisible(true);
+							break;
 						}
-
-						break;
-					case "Crear Nuevo Cliente":
-						new RegistroCliente(conexion).setVisible(true);
-						break;
-
-					case "No Deseo Registar informacion":
-
-						break;
-					}
+					} else
+						Utileria.escribir("No hay Existencias de ese Producto");
 
 				} else {
 					int op = JOptionPane.showConfirmDialog(null, "El Producto No Existe. \n¿Desea Buscarlo?",

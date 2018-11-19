@@ -69,6 +69,37 @@ public class Conexion {
 		return -1;
 	}
 
+	public int generarClienteRnd() {
+
+		int id = getIDClienteRnd();
+		String consulta = "insert into cliente (nombre) values('clienteNo:" + id + "')";
+
+		try {
+			getPreparedStatement(consulta).executeUpdate();
+			return id;
+		} catch (SQLException e) {
+
+			System.err.println("error al registrar Cliente Random: " + e.getMessage());
+			return -1;
+		}
+
+	}
+
+	private int getIDClienteRnd() {
+		String consulta = "SELECT max(id_cliente) from cliente";
+
+		ResultSet rs;
+		try {
+			rs = (ResultSet) Consulta(consulta);
+			rs.next();
+			return rs.getInt(1) + 1;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
 	public Object[][] getDatosTabla(ResultSet rs) throws SQLException {
 
 		ResultSetMetaData metaDatos = rs.getMetaData();
@@ -95,6 +126,21 @@ public class Conexion {
 		}
 
 		return are;
+	}
+
+	public int getIDVenta() {
+		String consulta = "SELECT max(id_venta) from ventas";
+
+		ResultSet rs;
+		try {
+			rs = (ResultSet) Consulta(consulta);
+			rs.next();
+			return rs.getInt(1) + 1;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 0;
 	}
 
 	public Resultset Consulta(String c) throws SQLException {
@@ -131,6 +177,21 @@ public class Conexion {
 			return false;
 		}
 
+	}
+
+	public boolean hayExistencia(int dato) {
+		String consulta = "Select existencias From productos where id_producto = '" + dato + "' and existencias > 0";
+		ResultSet rs;
+		try {
+			rs = (ResultSet) Consulta(consulta);
+
+			if (rs.next())
+				return true;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	public boolean existe(String tabla, String colum, String dato) {
