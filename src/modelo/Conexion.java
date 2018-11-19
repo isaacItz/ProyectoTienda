@@ -27,6 +27,21 @@ public class Conexion {
 		}
 	}
 
+	public String getCampo(String tabla, String campo, String criterio, String dato) {
+		String consulta = "Select " + campo + " From " + tabla + " where " + criterio + "= '" + dato + "'";
+		ResultSet rs;
+		try {
+			rs = (ResultSet) Consulta(consulta);
+
+			if (rs.next())
+				return rs.getString(1);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public Object[] getCamposTabla(String tablaName) throws SQLException {
 
 		String consulta = "DESCRIBE " + tablaName;
@@ -88,6 +103,49 @@ public class Conexion {
 
 	public void cerrarConexion() throws SQLException {
 		conexion.close();
+	}
+
+	public boolean agregarProductoExistente(int cant, String clave) {
+		int cantidad = 0;
+		String consulta = "Select existencias from productos where id_producto = '" + clave + "'";
+		ResultSet rs;
+		try {
+			rs = (ResultSet) Consulta(consulta);
+			rs.next();
+			cantidad = rs.getInt(1);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		String consulta1 = "UPDATE `productos` SET `existencias` = '" + (cant + cantidad)
+				+ "' WHERE `productos`.`id_producto` = '" + clave + "'";
+
+		try {
+			PreparedStatement ps = getPreparedStatement(consulta1);
+			ps.executeUpdate();
+			return true;
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+			return false;
+		}
+
+	}
+
+	public boolean existe(String tabla, String colum, String dato) {
+		String consulta = "Select * From " + tabla + " where " + colum + "= '" + dato + "'";
+		ResultSet rs;
+		try {
+			rs = (ResultSet) Consulta(consulta);
+
+			if (rs.next())
+				return true;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	public boolean existeUsuario(String user) {

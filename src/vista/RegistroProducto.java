@@ -44,9 +44,9 @@ public class RegistroProducto extends JDialog {
 	private JCheckBox chckbxFechaAcual_1;
 	private JDateChooser dateChooser;
 
-	public RegistroProducto(JFrame fa, Conexion conexion) {
+	public RegistroProducto(JFrame fa, Conexion conexion, int claveProducto) {
 		super(fa, true);
-		this.contadorProductos = conexion.getIDProductos();
+		this.contadorProductos = claveProducto;
 		this.conexion = conexion;
 		setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\Isaac\\Desktop\\fondo.jpg"));
 		setResizable(false);
@@ -66,7 +66,7 @@ public class RegistroProducto extends JDialog {
 		idProducto.setBounds(6, 16, 179, 20);
 		panel_1.add(idProducto);
 		idProducto.setEnabled(false);
-		idProducto.setText(String.valueOf(contadorProductos));
+		idProducto.setText(String.valueOf(claveProducto));
 		idProducto.setColumns(10);
 
 		JPanel panel_2 = new JPanel();
@@ -104,7 +104,7 @@ public class RegistroProducto extends JDialog {
 		textMarca.setColumns(10);
 
 		JPanel panel_3 = new JPanel();
-		panel_3.setBorder(new TitledBorder(null, "Color", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_3.setBorder(new TitledBorder(null, "Modelo", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panel_3.setBounds(298, 128, 191, 43);
 		getContentPane().add(panel_3);
 		panel_3.setLayout(null);
@@ -121,7 +121,7 @@ public class RegistroProducto extends JDialog {
 		textColor.setColumns(10);
 
 		JPanel panel_4 = new JPanel();
-		panel_4.setBorder(new TitledBorder(null, "Material", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_4.setBorder(new TitledBorder(null, "Tipo", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panel_4.setBounds(45, 208, 191, 43);
 		getContentPane().add(panel_4);
 		panel_4.setLayout(null);
@@ -207,10 +207,7 @@ public class RegistroProducto extends JDialog {
 			public void actionPerformed(ActionEvent arg0) {
 				if (validarFormularioRegistroProducto()) {
 					do {
-						for (int i = 0; i < Integer.parseInt(textCantidad.getText()); i++) {
-							registroProducto(textAreaCaracteristicas);
-							idProducto.setText(String.valueOf(contadorProductos));
-						}
+						registroProducto(textAreaCaracteristicas);
 						escribir("Producto registrado con exito");
 						limpiarCampos(textAreaCaracteristicas);
 					} while (continuar("¿Desea Agregar Mas Productos?"));
@@ -228,9 +225,9 @@ public class RegistroProducto extends JDialog {
 		SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
 		String fechaa = chckbxFechaAcual_1.isSelected() ? format.format(curDate) : format.format(dateChooser.getDate());
 
-		String consulta = "INSERT INTO `productos`(`id_producto`, `marca`, `color`, `material`, `detalles especificos`, `fecha Ingreso`, `estado`, `precio`, `nombre`,`fecha salida` ) "
-				+ "VALUES (" + contadorProductos++ + ",'" + textMarca.getText() + "','" + textColor.getText() + "','"
-				+ textMaterial.getText() + "','" + t.getText() + "','" + fechaa + "' ,'nuevo',"
+		String consulta = "INSERT INTO `productos`(`id_producto`, `marca`, `modelo`, `tipo`, `detalles especificos`, `fecha Ingreso`, `existencias`, `precio`, `nombre`,`fecha salida` ) "
+				+ "VALUES (" + contadorProductos + ",'" + textMarca.getText() + "','" + textColor.getText() + "','"
+				+ textMaterial.getText() + "','" + t.getText() + "','" + fechaa + "' ,'" + textCantidad.getText() + "',"
 				+ Integer.parseInt(textPrecio.getText()) + ",'" + textNombre.getText() + "',0000-00-00)";
 
 		try {

@@ -6,9 +6,15 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.swing.ButtonGroup;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -17,10 +23,15 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableModel;
+
+import com.mysql.cj.util.EscapeTokenizer;
+import com.mysql.cj.util.Util;
 
 import modelo.Conexion;
 import modelo.Utileria;
@@ -195,7 +206,25 @@ public class VistaPrincipalAdmin extends JFrame {
 		JMenuItem mntmIngresarArticulos = new JMenuItem("Ingresar Articulos");
 		mntmIngresarArticulos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				new RegistroProducto(re(), conexion).setVisible(true);
+				int claveP = Utileria.leerInt("Digite la Clave del Producto");
+				if (conexion.existe("productos", "id_producto", String.valueOf(claveP))) {
+					int opcion = JOptionPane.showConfirmDialog(null,
+							"El Producto Ya existe\nDesea Agregar mas al Inventario?", "Titulo",
+							JOptionPane.YES_NO_OPTION);
+					switch (opcion) {
+					case 0:
+						int cant = Utileria.leerInt("Ingresa la Cantidad a registrar ");
+						conexion.agregarProductoExistente(cant, String.valueOf(claveP));
+						Utileria.escribir("Exito!!");
+						break;
+					case 1:
+						Utileria.escribir("cancelado");
+						break;
+
+					}
+				} else
+					new RegistroProducto(re(), conexion, claveP).setVisible(true);
+
 			}
 		});
 		mnInventario.add(mntmIngresarArticulos);
@@ -207,17 +236,44 @@ public class VistaPrincipalAdmin extends JFrame {
 		mntmListarArticulos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 
+				// try {
+				//
+				// Object[] cabezera = conexion.getCamposTabla("productos");
+				// Object[][] datos = conexion.getDatosTabla((ResultSet)
+				// conexion.Consulta("Select * from productos"));
+				// tabla = new JTable(datos, cabezera);
+				// // JPanel panel = new JPanel()
+				// // tabla.setBorder(new TitledBorder(null, "Tabla de Articulos",
+				// // TitledBorder.LEADING, TitledBorder.TOP,
+				// // null, null));
+				// getContentPane().setLayout(new BorderLayout());
+				// getContentPane().add(new JScrollPane(tabla), BorderLayout.CENTER);
+				// pack();
+				// setExtendedState(JFrame.MAXIMIZED_BOTH);
+				//
+				// } catch (SQLException e) {
+				// e.printStackTrace();
+				// }
+
 				try {
 
 					Object[] cabezera = conexion.getCamposTabla("productos");
+					DefaultTableModel modelo = new DefaultTableModel();
 					Object[][] datos = conexion.getDatosTabla((ResultSet) conexion.Consulta("Select * from productos"));
-					tabla = new JTable(datos, cabezera);
+					tabla = new JTable();
+					modelo.setColumnIdentifiers(cabezera);
+					for (int i = 0; i < datos.length; i++) {
+						modelo.addRow(datos[i]);
+					}
+					tabla.setModel(modelo);
 					// JPanel panel = new JPanel()
 					// tabla.setBorder(new TitledBorder(null, "Tabla de Articulos",
 					// TitledBorder.LEADING, TitledBorder.TOP,
 					// null, null));
 					getContentPane().setLayout(new BorderLayout());
 					getContentPane().add(new JScrollPane(tabla), BorderLayout.CENTER);
+					System.out.println("constructron");
+					modelo.fireTableDataChanged();
 
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -239,11 +295,83 @@ public class VistaPrincipalAdmin extends JFrame {
 		JMenu mnVenta = new JMenu("Venta");
 		menuBar.add(mnVenta);
 
+		JMenuItem mntmRealizarVenta = new JMenuItem("Realizar Venta");
+		mntmRealizarVenta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+
+				int claveP = Utileria.leerInt("Ingrese la Clave del Producto a Vender");
+				if (conexion.existe("productos", "id_producto", String.valueOf(claveP))) {
+
+					Object[] optionsUser = new Object[] { "Ya Existe el Cliente", "Crear Nuevo Cliente",
+							"No Deseo Registar informacion" };
+					Object opcionU = JOptionPane.showInputDialog(null, "Desea Registrar la Informacion del Cliente",
+							"Elegir", JOptionPane.QUESTION_MESSAGE, null, optionsUser, optionsUser[0]);
+
+					switch (opcionU.toString()) {
+					case "Ya Existe el Cliente":
+						int clave = Utileria.leerInt("Digita la Clave del Cliente");
+						String clavee = conexion.getCampo("cliente", "id_cliente", "id_cliente", String.valueOf(clave));
+						if (clavee != null) {
+							new VentanaVenta(conexion, clavee, claveP).setVisible(true);
+						} else {
+							int op = JOptionPane.showConfirmDialog(null, "El Cliente No Existe.\n ¿Desea Buscarlo?");
+							if (op == 0)
+								Utileria.escribir("vusqueda");
+						}
+
+						break;
+					case "Crear Nuevo Cliente":
+						new RegistroCliente(conexion).setVisible(true);
+						break;
+
+					case "No Deseo Registar informacion":
+
+						break;
+					}
+
+				} else {
+					int op = JOptionPane.showConfirmDialog(null, "El Producto No Existe. \n¿Desea Buscarlo?",
+							"No entontrado", JOptionPane.YES_NO_OPTION);
+
+					if (op == 0) {
+						new VentanaBusquedaInventario(re(), conexion);
+					}
+				}
+
+			}
+		});
+		mnVenta.add(mntmRealizarVenta);
+
+		JMenu mnGestionDeclientes = new JMenu("Gestion deClientes");
+		menuBar.add(mnGestionDeclientes);
+
+		JMenuItem mntmRegistrarCliente = new JMenuItem("Registrar Cliente");
+		mntmRegistrarCliente.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent arg0) {
+
+				new RegistroCliente(conexion).setVisible(true);
+
+			}
+		});
+		mnGestionDeclientes.add(mntmRegistrarCliente);
+
+		JMenuItem mntmBuscarCliente = new JMenuItem("Buscar Cliente");
+		mnGestionDeclientes.add(mntmBuscarCliente);
+
+		JMenuItem mntmBorrarCliente = new JMenuItem("Borrar Cliente");
+		mnGestionDeclientes.add(mntmBorrarCliente);
+
+		JMenuItem mntmModificarCliente = new JMenuItem("Modificar Cliente");
+		mnGestionDeclientes.add(mntmModificarCliente);
+
 		JLabel lblNewLabel = new JLabel("Tabla de Productos");
 		lblNewLabel.setFont(new Font("Vivaldi", Font.BOLD, 20));
 		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel.setVerticalAlignment(SwingConstants.TOP);
+
 		getContentPane().add(lblNewLabel, BorderLayout.NORTH);
+
 		// tabla = new JTable();
 		// getContentPane().add(tabla);
 
