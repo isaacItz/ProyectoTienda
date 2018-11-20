@@ -5,6 +5,9 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -30,6 +33,8 @@ public class VistaPrincipalAdmin extends JFrame {
 	private JTable table;
 	private JScrollPane scrollPane;
 	private JLabel lblNewLabel;
+	private String tabla;
+	private boolean cambio = false;
 
 	public VistaPrincipalAdmin(Conexion conexion, String nombreUser) {
 
@@ -231,6 +236,13 @@ public class VistaPrincipalAdmin extends JFrame {
 		});
 		mnInventario.add(mntmBuscar);
 
+		scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 30, 974, 609);
+		getContentPane().add(scrollPane);
+
+		table = new JTable();
+		scrollPane.setViewportView(table);
+
 		JMenu mnVenta = new JMenu("Venta");
 		menuBar.add(mnVenta);
 
@@ -347,31 +359,55 @@ public class VistaPrincipalAdmin extends JFrame {
 
 		getContentPane().add(lblNewLabel);
 
-		scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 30, 974, 609);
-		getContentPane().add(scrollPane);
-
-		table = new JTable();
-		scrollPane.setViewportView(table);
-
 		// tabla = new JTable();
 		// getContentPane().add(tabla);
-
 		this.setVisible(true);
 	}
 
 	public void llenarTabla(String tabla) {
 		try {
 			lblNewLabel.setText("Tabla de " + tabla);
-
+			this.tabla = tabla;
 			Object[] cabezera = conexion.getCamposTabla(tabla);
 			Object[][] datos = conexion.getDatosTabla((ResultSet) conexion.Consulta("Select * from " + tabla));
 			table = new JTable(datos, cabezera);
+			table.getTableHeader().addMouseListener(new oyenteOrden());
 			scrollPane.setViewportView(table);
 
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void llenarTablaa(String consulta) {
+		try {
+			Object[] cabezera = conexion.getCamposTabla(tabla);
+			Object[][] datos = conexion.getDatosTabla((ResultSet) conexion.Consulta(consulta));
+			table = new JTable(datos, cabezera);
+			scrollPane.setViewportView(table);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	class oyenteOrden extends MouseAdapter {
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			int col = table.columnAtPoint(e.getPoint());
+			String name = table.getColumnName(col);
+			String consulta = "";
+			if (cambio) {
+				consulta = "ORDER BY `" + name + "` ASC";
+				cambio = !cambio;
+			} else {
+				consulta = "ORDER BY `" + name + "` DESC";
+				cambio = !cambio;
+			}
+			llenarTablaa("Select * from " + tabla + " " + consulta);
+			table.getTableHeader().addMouseListener(new oyenteOrden());
+		}
+
 	}
 
 	public JFrame re() {
