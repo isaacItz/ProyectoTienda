@@ -9,6 +9,7 @@ import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -25,7 +26,7 @@ import com.toedter.calendar.JDateChooser;
 
 import modelo.Conexion;
 
-public class VentanaBusquedaInventario extends JDialog {
+public class VentanaBusquedaGeneral extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
@@ -37,11 +38,14 @@ public class VentanaBusquedaInventario extends JDialog {
 	private Object[][] datos;
 	private Object[] columnasTabla = null;
 	private JDateChooser dateChooser;
+	private String nombreTabla;
+	private int colUno;
+	private int colDos;
 
-	public VentanaBusquedaInventario( Conexion conexion) {
+	public VentanaBusquedaGeneral(Conexion conexion, String nombreTabla) {
 
 		setModal(true);
-
+		this.nombreTabla = nombreTabla;
 		this.conexion = conexion;
 		setTitle("CASA RAIZ");
 		setResizable(false);
@@ -94,7 +98,7 @@ public class VentanaBusquedaInventario extends JDialog {
 				if (table != null)
 					table.removeAll();
 				if (comboBox.getSelectedIndex() > 0) {
-					if (comboBox.getSelectedIndex() == 6 || comboBox.getSelectedIndex() == 7) {
+					if (comboBox.getSelectedItem().toString().startsWith("fecha")) {
 						dateChooser.setEnabled(true);
 						textField.setEnabled(false);
 					} else {
@@ -111,7 +115,7 @@ public class VentanaBusquedaInventario extends JDialog {
 
 		comboBox.addItem("Selecciona un criterio");
 		try {
-			columnasTabla = conexion.getCamposTabla("productos");
+			columnasTabla = conexion.getCamposTabla(nombreTabla);
 			for (Object string : columnasTabla)
 				comboBox.addItem(string.toString());
 		} catch (SQLException e) {
@@ -149,7 +153,7 @@ public class VentanaBusquedaInventario extends JDialog {
 			if (dateChooser.getDate() != null && dateChooser.isEnabled())
 				operador = " = '" + new SimpleDateFormat("yyyy/MM/dd").format(dateChooser.getDate()).toString();
 
-			rs = (ResultSet) conexion.Consulta("Select * from productos where `"
+			rs = (ResultSet) conexion.Consulta("Select * from " + nombreTabla + " where `"
 					+ comboBox.getSelectedItem().toString().concat("` ") + operador + "'");
 			datos = conexion.getDatosTabla(rs);
 			table = new JTable(datos, columnasTabla);

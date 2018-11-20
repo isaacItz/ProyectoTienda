@@ -1,21 +1,13 @@
 package vista;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -23,15 +15,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
-import javax.swing.table.DefaultTableModel;
-
-import com.mysql.cj.util.EscapeTokenizer;
-import com.mysql.cj.util.Util;
 
 import modelo.Conexion;
 import modelo.Utileria;
@@ -39,15 +26,23 @@ import modelo.Utileria;
 public class VistaPrincipalAdmin extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	private JTable tabla;
+	private Conexion conexion;
+	private JTable table;
+	private JScrollPane scrollPane;
+	private JLabel lblNewLabel;
 
 	public VistaPrincipalAdmin(Conexion conexion, String nombreUser) {
+
+		this.conexion = conexion;
 		setForeground(Color.LIGHT_GRAY);
 		setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\Isaac\\Desktop\\fondo.jpg"));
 		this.setTitle("Casa Raiz Panel ADMINISTRADOR");
-		this.setSize(600, 800);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		setSize(1000, 700);
+		// this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		setResizable(false);
+		setLocationRelativeTo(null);
+		getContentPane().setSize(getSize());
 
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -180,21 +175,7 @@ public class VistaPrincipalAdmin extends JFrame {
 		JMenuItem mntmListar = new JMenuItem("Listar");
 		mntmListar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				TablaUsuarios tabla = new TablaUsuarios();
-				ResultSet rs;
-				try {
-
-					rs = (ResultSet) conexion.Consulta("select *From Usuarios");
-					tabla.agregarDatos(rs);
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-				// getContentPane().add(tabla.devolverTablaScroll(), BorderLayout.CENTER);
-				// pack();
-				// setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-				JOptionPane.showMessageDialog(null, tabla.devolverTablaScroll(), getTitle(), 1);
-
+				llenarTabla("Usuarios");
 			}
 		});
 
@@ -236,49 +217,7 @@ public class VistaPrincipalAdmin extends JFrame {
 		mntmListarArticulos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 
-				// try {
-				//
-				// Object[] cabezera = conexion.getCamposTabla("productos");
-				// Object[][] datos = conexion.getDatosTabla((ResultSet)
-				// conexion.Consulta("Select * from productos"));
-				// tabla = new JTable(datos, cabezera);
-				// // JPanel panel = new JPanel()
-				// // tabla.setBorder(new TitledBorder(null, "Tabla de Articulos",
-				// // TitledBorder.LEADING, TitledBorder.TOP,
-				// // null, null));
-				// getContentPane().setLayout(new BorderLayout());
-				// getContentPane().add(new JScrollPane(tabla), BorderLayout.CENTER);
-				// pack();
-				// setExtendedState(JFrame.MAXIMIZED_BOTH);
-				//
-				// } catch (SQLException e) {
-				// e.printStackTrace();
-				// }
-
-				try {
-
-					Object[] cabezera = conexion.getCamposTabla("productos");
-					DefaultTableModel modelo = new DefaultTableModel();
-					Object[][] datos = conexion.getDatosTabla((ResultSet) conexion.Consulta("Select * from productos"));
-					tabla = new JTable();
-					modelo.setColumnIdentifiers(cabezera);
-					for (int i = 0; i < datos.length; i++) {
-						modelo.addRow(datos[i]);
-					}
-					tabla.setModel(modelo);
-					// JPanel panel = new JPanel()
-					// tabla.setBorder(new TitledBorder(null, "Tabla de Articulos",
-					// TitledBorder.LEADING, TitledBorder.TOP,
-					// null, null));
-					getContentPane().setLayout(new BorderLayout());
-					getContentPane().add(new JScrollPane(tabla), BorderLayout.CENTER);
-					System.out.println("constructron");
-					modelo.fireTableDataChanged();
-
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-
+				llenarTabla("productos");
 			}
 		});
 		mnInventario.add(mntmListarArticulos);
@@ -286,7 +225,7 @@ public class VistaPrincipalAdmin extends JFrame {
 		JMenuItem mntmBuscar = new JMenuItem("Buscar");
 		mntmBuscar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new VentanaBusquedaInventario(re(), conexion);
+				new VentanaBusquedaGeneral(conexion, "productos");
 
 			}
 		});
@@ -339,13 +278,29 @@ public class VistaPrincipalAdmin extends JFrame {
 							"No entontrado", JOptionPane.YES_NO_OPTION);
 
 					if (op == 0) {
-						new VentanaBusquedaInventario(re(), conexion);
+						new VentanaBusquedaInventario(conexion);
 					}
 				}
 
 			}
 		});
 		mnVenta.add(mntmRealizarVenta);
+
+		JMenuItem mntmListarVentas = new JMenuItem("Listar Ventas");
+		mntmListarVentas.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				llenarTabla("ventas");
+			}
+		});
+
+		JMenuItem mntmBuscarVenta = new JMenuItem("Buscar Venta");
+		mntmBuscarVenta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new VentanaBusquedaGeneral(conexion, "ventas");
+			}
+		});
+		mnVenta.add(mntmBuscarVenta);
+		mnVenta.add(mntmListarVentas);
 
 		JMenu mnGestionDeclientes = new JMenu("Gestion deClientes");
 		menuBar.add(mnGestionDeclientes);
@@ -362,6 +317,11 @@ public class VistaPrincipalAdmin extends JFrame {
 		mnGestionDeclientes.add(mntmRegistrarCliente);
 
 		JMenuItem mntmBuscarCliente = new JMenuItem("Buscar Cliente");
+		mntmBuscarCliente.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new VentanaBusquedaGeneral(conexion, "cliente");
+			}
+		});
 		mnGestionDeclientes.add(mntmBuscarCliente);
 
 		JMenuItem mntmBorrarCliente = new JMenuItem("Borrar Cliente");
@@ -370,12 +330,29 @@ public class VistaPrincipalAdmin extends JFrame {
 		JMenuItem mntmModificarCliente = new JMenuItem("Modificar Cliente");
 		mnGestionDeclientes.add(mntmModificarCliente);
 
-		JLabel lblNewLabel = new JLabel("Tabla de Productos");
+		JMenuItem mntmListarClientes = new JMenuItem("Listar Clientes");
+		mntmListarClientes.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				llenarTabla("cliente");
+			}
+		});
+		mnGestionDeclientes.add(mntmListarClientes);
+		getContentPane().setLayout(null);
+
+		lblNewLabel = new JLabel("Casa Raiz");
+		lblNewLabel.setBounds(0, 0, 984, 25);
 		lblNewLabel.setFont(new Font("Vivaldi", Font.BOLD, 20));
 		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel.setVerticalAlignment(SwingConstants.TOP);
 
-		getContentPane().add(lblNewLabel, BorderLayout.NORTH);
+		getContentPane().add(lblNewLabel);
+
+		scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 30, 974, 609);
+		getContentPane().add(scrollPane);
+
+		table = new JTable();
+		scrollPane.setViewportView(table);
 
 		// tabla = new JTable();
 		// getContentPane().add(tabla);
@@ -383,8 +360,21 @@ public class VistaPrincipalAdmin extends JFrame {
 		this.setVisible(true);
 	}
 
+	public void llenarTabla(String tabla) {
+		try {
+			lblNewLabel.setText("Tabla de " + tabla);
+
+			Object[] cabezera = conexion.getCamposTabla(tabla);
+			Object[][] datos = conexion.getDatosTabla((ResultSet) conexion.Consulta("Select * from " + tabla));
+			table = new JTable(datos, cabezera);
+			scrollPane.setViewportView(table);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public JFrame re() {
 		return this;
 	}
-
 }
