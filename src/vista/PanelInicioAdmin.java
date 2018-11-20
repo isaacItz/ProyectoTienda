@@ -68,21 +68,25 @@ public class PanelInicioAdmin extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 
 				try {
+					if (conexion.hayUsers()) {
+						ResultSet rs = (ResultSet) conexion
+								.Consulta("SELECT * FROM usuarios WHERE Usuario ='" + textField.getText()
+										+ "' AND contraseña = '" + String.valueOf(passwordField.getPassword()) + "'");
 
-					ResultSet rs = (ResultSet) conexion.Consulta(
-							"SELECT * FROM usuarios WHERE Usuario ='" + textField.getText() + "' AND contraseña = '"
-									+ String.valueOf(passwordField.getPassword()) + "'");
+						if (rs.next()) {
+							if (rs.getString(5).toLowerCase().equals("administrador"))
+								new VistaPrincipalAdmin(conexion, rs.getString(1), true);
+							else
+								new VistaPrincipalAdmin(conexion, rs.getString(1), false);
+							dispose();
+						} else {
+							JOptionPane.showMessageDialog(null, "el usuario o contraseña no existe", "Eror", 0);
+							textField.setText("");
+							passwordField.setText("");
+						}
 
-					if (rs.next()) {
-						if (rs.getString(5).toLowerCase().equals("administrador"))
-							new VistaPrincipalAdmin(conexion, rs.getString(1), true);
-						else
-							new VistaPrincipalAdmin(conexion, rs.getString(1), false);
-						dispose();
 					} else {
-						JOptionPane.showMessageDialog(null, "el usuario o contraseña no existe", "Eror", 0);
-						textField.setText("");
-						passwordField.setText("");
+						conexion.agregarUser();
 					}
 
 				} catch (Exception ex) {

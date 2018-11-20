@@ -2,6 +2,7 @@ package vista;
 
 import static modelo.Utileria.esNumero;
 import static modelo.Utileria.escribir;
+import static modelo.Utileria.esNumeroDecimal;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -27,6 +28,7 @@ import javax.swing.event.DocumentListener;
 import com.toedter.calendar.JDateChooser;
 
 import modelo.Conexion;
+import modelo.Utileria;
 
 public class VentanaVenta extends JDialog {
 
@@ -55,7 +57,7 @@ public class VentanaVenta extends JDialog {
 	private int claveProducto;
 	private int idCliente;
 	private String nombreUsuario;
-	private int precio;
+	private double precio;
 	private JDateChooser dateChooser;
 	private JCheckBox chckbxNewCheckBox;
 	private JComboBox<String> comboBox;
@@ -169,15 +171,32 @@ public class VentanaVenta extends JDialog {
 
 		panel_7 = new JPanel();
 		panel_7.setBorder(new TitledBorder(null, "Precio", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_7.setBounds(48, 208, 98, 43);
+		panel_7.setBounds(48, 208, 128, 43);
 		getContentPane().add(panel_7);
 		panel_7.setLayout(null);
 
 		precioP = new JTextField();
+		precioP.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				precioP.setBackground(Color.white);
+			}
+		});
 		precioP.setEditable(false);
 		precioP.setBounds(6, 16, 86, 20);
 		panel_7.add(precioP);
 		precioP.setColumns(10);
+
+		JCheckBox chckbxEditar = new JCheckBox("");
+		chckbxEditar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				precioP.setEditable(!precioP.isEditable());
+				if (!precioP.isEditable())
+					asignaciones();
+
+			}
+		});
+		chckbxEditar.setBounds(98, 16, 21, 23);
+		panel_7.add(chckbxEditar);
 
 		panel_8 = new JPanel();
 		panel_8.setBorder(new TitledBorder(null, "Existencias", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -208,11 +227,13 @@ public class VentanaVenta extends JDialog {
 		panel_9.add(cantidadP);
 		cantidadP.setColumns(10);
 		cantidadP.getDocument().addDocumentListener(new DocumentListener() {
+			double prec = 0;
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				int prec = 0;
+				prec = 0;
 				try {
+					precio = Double.parseDouble(precioP.getText());
 					prec = Integer.parseInt(cantidadP.getText()) * precio;
 					precioFinal.setText(String.valueOf(prec));
 				} catch (NumberFormatException ex) {
@@ -222,8 +243,9 @@ public class VentanaVenta extends JDialog {
 
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				int prec = 0;
+				prec = 0;
 				try {
+					precio = Double.parseDouble(precioP.getText());
 					prec = Integer.parseInt(cantidadP.getText()) * precio;
 					precioFinal.setText(String.valueOf(prec));
 				} catch (NumberFormatException ex) {
@@ -233,8 +255,9 @@ public class VentanaVenta extends JDialog {
 
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				int prec = 0;
+				prec = 0;
 				try {
+					precio = Double.parseDouble(precioP.getText());
 					prec = Integer.parseInt(cantidadP.getText()) * precio;
 					precioFinal.setText(String.valueOf(prec));
 				} catch (NumberFormatException ex) {
@@ -288,12 +311,19 @@ public class VentanaVenta extends JDialog {
 		btnVenta.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (validar()) {
-
+					double m = Double.parseDouble(monto.getText());
+					double cat = Double.parseDouble(precioFinal.getText());
+					if (m > cat)
+						escribir(
+								"Total de la compra: " + cat + "\n dinero depositado: " + m + "\nCambio: " + (m - cat));
 					Date fecha = getFechaChoser() != null ? getFechaChoser() : getFechaActual();
 					SimpleDateFormat s = new SimpleDateFormat("yyyy/MM/dd");
 					String consulta = "INSERT INTO `ventas`"
 							+ "(`id_venta`, `id_producto`, `fecha venta`, `estado`,  `total`, `pagado`, `id_cliente`, `balance`,`vendedor`) "
 							+ "VALUES (?,?,?,?,?,?,?,?,?)";
+
+					double bal = m >= cat ? 0 : cat - m;
+					double pagado = m > cat ? cat : m;
 
 					try {
 						PreparedStatement ps = conexion.getPreparedStatement(consulta);
@@ -302,9 +332,9 @@ public class VentanaVenta extends JDialog {
 						ps.setString(3, s.format(fecha));
 						ps.setString(4, comboBox.getSelectedIndex() == 0 ? "Pagado" : "Parcial");
 						ps.setString(5, precioFinal.getText());
-						ps.setString(6, monto.getText());
-						ps.setInt(7, idCliente);
-						ps.setInt(8, Integer.parseInt(precioFinal.getText()) - Integer.parseInt(monto.getText()));
+						ps.setString(6, String.valueOf(pagado));
+						ps.setString(7, String.valueOf(idCliente));
+						ps.setString(8, String.valueOf(bal));
 						ps.setString(9, nombreUsuario);
 						ps.executeUpdate();
 						escribir("Producto vendido");
@@ -317,9 +347,9 @@ public class VentanaVenta extends JDialog {
 					} catch (SQLException e) {
 						System.err.println("Error al vender: " + e.getMessage());
 					}
-
+					dispose();
 				}
-				dispose();
+
 			}
 		});
 		btnVenta.setBounds(333, 384, 176, 43);
@@ -363,6 +393,14 @@ public class VentanaVenta extends JDialog {
 
 	public boolean validar() {
 
+		if (precioP.isEditable()) {
+			if (!Utileria.esNumeroDecimal(precioP.getText())) {
+				precioP.setBackground(Color.RED);
+				escribir("No dejes el Campo Vacio");
+				return false;
+			}
+		}
+
 		if (cantidadP.getText().isEmpty()) {
 			cantidadP.setBackground(Color.RED);
 			escribir("No dejes el Campo Vacio");
@@ -393,13 +431,13 @@ public class VentanaVenta extends JDialog {
 			escribir("Rellena el campo");
 			return false;
 		}
-		if (!esNumero(monto.getText())) {
+		if (!esNumeroDecimal(monto.getText())) {
 			monto.setBackground(Color.red);
 			escribir("Escribe solo numeros");
 			return false;
 		}
-		int mont = Integer.parseInt(monto.getText());
-		int tot = Integer.parseInt(precioFinal.getText());
+		double mont = Double.parseDouble(monto.getText());
+		double tot = Double.parseDouble(precioFinal.getText());
 		if (comboBox.getSelectedItem().equals("Contado") && mont < tot) {
 			monto.setBackground(Color.red);
 			escribir("Necesita El Total de la Cuenta");

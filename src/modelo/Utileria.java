@@ -31,7 +31,7 @@ public class Utileria {
 
 	public static double leerDouble(String mensaje) {
 		String entrada = leerCadena(mensaje);
-		int numero = Integer.parseInt(entrada);
+		double numero = Double.parseDouble(entrada);
 		return numero;
 	}
 
@@ -59,6 +59,15 @@ public class Utileria {
 		} catch (Exception e) {
 			System.err.println("cancelar");
 		}
+	}
+
+	public static boolean esNumeroDecimal(String cadena) {
+		try {
+			Double.parseDouble(cadena);
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
 	}
 
 	public static boolean esNumero(String cadena) {

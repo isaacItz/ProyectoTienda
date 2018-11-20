@@ -1,5 +1,7 @@
 package vista;
 
+import static modelo.Utileria.escribir;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Toolkit;
@@ -507,21 +509,29 @@ public class VistaPrincipalAdmin extends JFrame {
 				int idVenta = Utileria.leerInt("Digite el ID de la Venta");
 				if (conexion.existe("ventas", "id_venta", String.valueOf(idVenta))) {
 					if (conexion.getCampo("ventas", "estado", "id_venta", String.valueOf(idVenta)).equals("Parcial")) {
-						int cant = Utileria.leerInt("ingrese el monto a depositar");
+						double cant = Utileria.leerDouble("ingrese el monto a depositar");
 						String consulta = "Select total, pagado, balance from ventas where id_venta = " + idVenta;
 						try {
 							ResultSet rs = (ResultSet) conexion.Consulta(consulta);
 							rs.next();
-							int balance = rs.getInt(1) - (cant + rs.getInt(2));
+							double total = rs.getDouble(1);
+							double pagado = (cant + rs.getDouble(2));
+							double balance = pagado > total ? 0 : total - pagado;
+
+							if (pagado > total)
+								Utileria.escribir("Total de la compra: " + total + "\n dinero depositado: " + cant
+										+ "\nCambio: " + (total - pagado));
+
+							pagado = (pagado > total) ? total : pagado;
+
 							PreparedStatement ps;
 							if (balance <= 0)
-								ps = conexion.getPreparedStatement("UPDATE `ventas` SET `pagado` = '"
-										+ (cant + rs.getInt(2)) + "', estado ='Pagado', balance = " + 0
-										+ " WHERE `ventas`.`id_venta` = " + idVenta + "");
+								ps = conexion.getPreparedStatement("UPDATE `ventas` SET `pagado` = '" + (pagado)
+										+ "', estado ='Pagado', balance = " + 0 + " WHERE `ventas`.`id_venta` = "
+										+ idVenta + "");
 							else
-								ps = conexion.getPreparedStatement(
-										"UPDATE `ventas` SET `pagado` = '" + (cant + rs.getInt(2)) + "', balance = "
-												+ balance + " WHERE `ventas`.`id_venta` = " + idVenta + "");
+								ps = conexion.getPreparedStatement("UPDATE `ventas` SET `pagado` = '" + (pagado)
+										+ "', balance = " + balance + " WHERE `ventas`.`id_venta` = " + idVenta + "");
 							ps.executeUpdate();
 
 							Utileria.escribir("Monto depositado \nDinero Restante para Concluir la compra: " + balance);

@@ -9,6 +9,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+
 import com.mysql.cj.protocol.Resultset;
 
 public class Conexion {
@@ -288,8 +291,55 @@ public class Conexion {
 		return false;
 	}
 
+	public boolean hayUsers() {
+		String consulta = "Select * From usuarios where ";
+		ResultSet rs;
+		try {
+			rs = (ResultSet) Consulta(consulta);
+			if (rs.next())
+				return true;
+			return false;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+
+	}
+
+	public void agregarUser() {
+		String nombre, usuario, contraseña;
+		do {
+			usuario = JOptionPane.showInputDialog(null, "Ingresa su Nombre De Usuario (Debe ser unico)",
+					"Nuevo Usuario", JOptionPane.QUESTION_MESSAGE);
+			if (usuario != null) {
+				if (Utileria.valido(usuario)) {
+					nombre = JOptionPane.showInputDialog(null, "Ingresa el Nombre de la Persona a Registrar",
+							"Nuevo Usuario", JOptionPane.QUESTION_MESSAGE);
+					JPasswordField passwordField = new JPasswordField();
+					passwordField.setEchoChar('☺');
+					passwordField.setColumns(20);
+
+					JOptionPane.showConfirmDialog(null, passwordField, "Contraseña", JOptionPane.OK_CANCEL_OPTION);
+					contraseña = String.copyValueOf(passwordField.getPassword());
+					int edad = Utileria.leerInt("Ingresa la edad de la persona a Registar");
+					String[] tipos = { "Administrador" };
+					String tipo = (String) JOptionPane.showInputDialog(null, "tipo de Usuario?", "Tipo",
+							JOptionPane.QUESTION_MESSAGE, null, tipos, tipos[0]);
+					System.out.println(tipo);
+
+					altaUser(usuario, nombre, contraseña, edad, tipo);
+
+				} else
+					Utileria.escribir("invalido no deje el campo vacio ");
+			} else
+				break;
+		} while (Utileria.continuar("Desea Registrar Otro Usuario"));
+
+	}
+
 	public boolean altaUser(String user, String nom, String contra, int edad, String tipo) {
-		String insertTableSQL = "INSERT INTO `usuarios`(`Usuario`, `Nombre Completo`, `contrase�a`, `edad`, `tipo`) VALUES "
+		String insertTableSQL = "INSERT INTO `usuarios`(`Usuario`, `Nombre Completo`, `contraseña`, `edad`, `tipo`) VALUES "
 				+ "(?,?,?,?,?)";
 
 		try {
@@ -348,9 +398,9 @@ public class Conexion {
 		try {
 			rs = (ResultSet) Consulta(consulta);
 			ResultSetMetaData metaDatos = rs.getMetaData();
-			int tama�o = metaDatos.getColumnCount();
+			int tamaño = metaDatos.getColumnCount();
 			rs.next();
-			for (int i = 2; i <= tama�o; i++) {
+			for (int i = 2; i <= tamaño; i++) {
 				salida += metaDatos.getColumnLabel(i) + ":  ";
 				salida += rs.getString(i) + "  ";
 			}
