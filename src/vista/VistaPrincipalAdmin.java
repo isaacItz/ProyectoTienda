@@ -7,11 +7,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,9 +22,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
-import javax.swing.plaf.synth.SynthScrollBarUI;
-
-import com.mysql.cj.util.EscapeTokenizer;
 
 import modelo.Conexion;
 import modelo.Utileria;
@@ -41,7 +36,7 @@ public class VistaPrincipalAdmin extends JFrame {
 	private String tabla;
 	private boolean cambio = false;
 
-	public VistaPrincipalAdmin(Conexion conexion, String nombreUser) {
+	public VistaPrincipalAdmin(Conexion conexion, String nombreUser, boolean admin) {
 
 		this.conexion = conexion;
 		setForeground(Color.LIGHT_GRAY);
@@ -640,7 +635,8 @@ public class VistaPrincipalAdmin extends JFrame {
 					} catch (SQLException e) {
 						e.printStackTrace();
 					}
-				}
+				} else
+					Utileria.escribir("El Cliente No Existe");
 
 			}
 		});
@@ -662,6 +658,13 @@ public class VistaPrincipalAdmin extends JFrame {
 		lblNewLabel.setVerticalAlignment(SwingConstants.TOP);
 
 		getContentPane().add(lblNewLabel);
+
+		if (!admin) {
+			mnGestionDeUsuarios.setEnabled(false);
+			mntmIngresarArticulos.setEnabled(false);
+			mntmEditarArticulo.setEnabled(false);
+			mntmEliminarArticulos.setEnabled(false);
+		}
 
 		// tabla = new JTable();
 		// getContentPane().add(tabla);

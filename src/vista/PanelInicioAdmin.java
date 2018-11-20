@@ -32,10 +32,6 @@ public class PanelInicioAdmin extends JFrame {
 		if (!conexion.generarConexion())
 			JOptionPane.showMessageDialog(null, "Error al Establecer Conexion", "Fauil Connect", 0);
 
-		new VistaPrincipalAdmin(conexion, "isaac");
-		this.dispose();
-		this.setVisible(false);
-
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setTitle("Casa Raiz");
 		getContentPane().setLayout(null);
@@ -75,13 +71,13 @@ public class PanelInicioAdmin extends JFrame {
 
 					ResultSet rs = (ResultSet) conexion.Consulta(
 							"SELECT * FROM usuarios WHERE Usuario ='" + textField.getText() + "' AND contraseña = '"
-									+ String.valueOf(passwordField.getPassword()) + "' AND tipo = 'administrador' ");
+									+ String.valueOf(passwordField.getPassword()) + "'");
 
 					if (rs.next()) {
 						if (rs.getString(5).toLowerCase().equals("administrador"))
-							new VistaPrincipalAdmin(conexion, rs.getString(1));
+							new VistaPrincipalAdmin(conexion, rs.getString(1), true);
 						else
-							new VistaPrincipalEmpleado(textField.getText());
+							new VistaPrincipalAdmin(conexion, rs.getString(1), false);
 						dispose();
 					} else {
 						JOptionPane.showMessageDialog(null, "el usuario o contraseña no existe", "Eror", 0);

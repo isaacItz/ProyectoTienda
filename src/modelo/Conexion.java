@@ -242,6 +242,21 @@ public class Conexion {
 		return false;
 	}
 
+	public boolean esAdmin(String user) {
+		try {
+			ResultSet rs = (ResultSet) Consulta("Select tipo from usuarios where usuario = '" + user + "'");
+			rs.next();
+			if (rs.getString(1).equals("Administrador")) {
+				return true;
+			}
+			return false;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	public boolean existe(String tabla, String colum, String dato) {
 		String consulta = "Select * From " + tabla + " where " + colum + "= '" + dato + "'";
 		ResultSet rs;
@@ -274,7 +289,7 @@ public class Conexion {
 	}
 
 	public boolean altaUser(String user, String nom, String contra, int edad, String tipo) {
-		String insertTableSQL = "INSERT INTO `usuarios`(`Usuario`, `Nombre Completo`, `contraseï¿½a`, `edad`, `tipo`) VALUES "
+		String insertTableSQL = "INSERT INTO `usuarios`(`Usuario`, `Nombre Completo`, `contraseña`, `edad`, `tipo`) VALUES "
 				+ "(?,?,?,?,?)";
 
 		try {
