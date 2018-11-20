@@ -42,6 +42,40 @@ public class Conexion {
 		return null;
 	}
 
+	public Object[] getArregloModificaion(ResultSet rs) {
+
+		ArrayList<Object> lista = new ArrayList<>();
+		Object[] cols = getNombreCiertasColumnas(rs);
+		try {
+			rs.next();
+			for (int i = 0; i < cols.length; i++) {
+				String renglon = cols[i].toString() + ":  " + rs.getString(i + 1) + " ";
+				lista.add(renglon);
+			}
+			return lista.toArray();
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+			return null;
+		}
+
+	}
+
+	public boolean actualizar(String tabla, String campo, String dato, String criterio, String datoCriterio) {
+		String consulta = "UPDATE `" + tabla + "` SET `" + campo + "` = '" + dato + "'  WHERE `" + criterio + "` = '"
+				+ datoCriterio + "'";
+
+		PreparedStatement ps;
+		try {
+			ps = getPreparedStatement(consulta);
+			ps.executeUpdate();
+			return true;
+		} catch (SQLException e) {
+			System.err.println("error al actualizar: " + e.getMessage());
+			return false;
+		}
+
+	}
+
 	public Object[] getCamposTabla(String tablaName) throws SQLException {
 
 		String consulta = "DESCRIBE " + tablaName;
@@ -98,6 +132,20 @@ public class Conexion {
 			e.printStackTrace();
 		}
 		return 0;
+	}
+
+	public Object[] getNombreCiertasColumnas(ResultSet rs) {
+		try {
+			ResultSetMetaData metaDatos = rs.getMetaData();
+			Object[] ar = new Object[metaDatos.getColumnCount()];
+			for (int i = 0; i < ar.length; i++) {
+				ar[i] = metaDatos.getColumnLabel(i + 1);
+			}
+			return ar;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	public Object[][] getDatosTabla(ResultSet rs) throws SQLException {

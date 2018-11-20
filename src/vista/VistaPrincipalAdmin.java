@@ -8,8 +8,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,6 +24,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.plaf.synth.SynthScrollBarUI;
+
+import com.mysql.cj.util.EscapeTokenizer;
 
 import modelo.Conexion;
 import modelo.Utileria;
@@ -155,23 +160,76 @@ public class VistaPrincipalAdmin extends JFrame {
 		mntmModificar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
-				String usuario;
-				do {
-					usuario = JOptionPane.showInputDialog(null, "Ingresa su Nombre De Usuario que Desea Modificar",
-							"Modificar Usuario", JOptionPane.QUESTION_MESSAGE);
-					if (usuario != null) {
-						if (Utileria.valido(usuario)) {
-							if (conexion.existeUsuario(usuario)) {
-								Utileria.escribir(conexion.consultarUsuario(usuario));
+				String clave = Utileria.leerCadena("ingrese el Nombre de Usuario  Modificar");
+				if (conexion.existeUsuario(clave)) {
+					try {
+						int op;
+						int salida = 0;
+						do {
+							Object[] arr = conexion.getArregloModificaion((ResultSet) conexion.Consulta(
+									"Select Usuario,`Nombre Completo`,contraseña, edad from usuarios Where Usuario = '"
+											+ clave + "'"));
+							salida = arr.length + 1;
+							op = Utileria.mostrarMenu(arr);
+							String campo;
+							boolean invalido = false;
+							switch (op) {
+							case 1:
+								do {
+									campo = Utileria.leerCadena("ingresa el nuevo nombre de Usuario");
+									if (!conexion.actualizar("usuarios", "Usuario", campo, "Usuario", clave)) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else {
+										clave = campo;
+										invalido = false;
+									}
 
-							} else
-								Utileria.escribir("El usuario No Existe");
+								} while (invalido);
+								break;
 
-						} else
-							Utileria.escribir("invalido no deje el campo vacio ");
-					} else
-						break;
-				} while (Utileria.continuar("Desea Consultar Otro Usuario"));
+							case 2:
+								do {
+									campo = Utileria.leerCadena("ingresa el Nuevo Nombre Completo");
+									if (!conexion.actualizar("usuarios", "Nombre Completo", campo, "Usuario", clave)) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+								} while (invalido);
+								break;
+
+							case 3:
+								do {
+									campo = Utileria.leerCadena("ingresa la Nueva Contraseña");
+									if (!conexion.actualizar("usuarios", "contraseña", campo, "Usuario", clave)) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+								} while (invalido);
+								break;
+
+							case 4:
+								do {
+									campo = Utileria.leerCadena("ingresa la nueva edad");
+									if (!conexion.actualizar("usuarios", "edad", campo, "Usuario", clave)) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+								} while (invalido);
+								break;
+							}
+
+						} while (op != salida);
+
+					} catch (SQLException es) {
+						es.printStackTrace();
+					}
+				} else {
+					Utileria.escribir("El Usuario no Existe");
+				}
 
 			}
 		});
@@ -216,6 +274,38 @@ public class VistaPrincipalAdmin extends JFrame {
 		mnInventario.add(mntmIngresarArticulos);
 
 		JMenuItem mntmEliminarArticulos = new JMenuItem("Eliminar Articulos");
+		mntmEliminarArticulos.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				int id = Utileria.leerInt("Ingresa el Codigo del Producto");
+
+				if (conexion.existe("productos", "id_producto", String.valueOf(id))) {
+					int exis = Integer
+							.parseInt(conexion.getCampo("productos", "existencias", "id_producto", String.valueOf(id)));
+					int cantidad;
+					do {
+						cantidad = Utileria
+								.leerInt("Total de Existencias: " + exis + "\nCuantos Productos Quieres Eliminar");
+						if (cantidad > exis)
+							Utileria.escribir("La cantidad supera las Existencias");
+					} while (cantidad > exis);
+
+					try {
+						PreparedStatement ps = conexion.getPreparedStatement("UPDATE `productos` SET `existencias` = '"
+								+ (exis - cantidad) + "' WHERE `productos`.`id_producto` = " + id + "");
+
+						ps.executeUpdate();
+						Utileria.escribir("Elementos Eliminados");
+					} catch (SQLException e1) {
+						Utileria.escribir("Elementos NO Eliminados");
+						e1.printStackTrace();
+					}
+
+				} else
+					Utileria.escribir("El Producto no Existe");
+
+			}
+		});
 		mnInventario.add(mntmEliminarArticulos);
 
 		JMenuItem mntmListarArticulos = new JMenuItem("Listar Articulos");
@@ -234,6 +324,109 @@ public class VistaPrincipalAdmin extends JFrame {
 
 			}
 		});
+
+		JMenuItem mntmEditarArticulo = new JMenuItem("Editar Articulo");
+		mntmEditarArticulo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int clave = Utileria.leerInt("ingrese la Clave del Producto a Modificar");
+				if (conexion.existe("productos", "id_producto", String.valueOf(clave))) {
+					try {
+						int op;
+						int salida = 0;
+						do {
+							Object[] arr = conexion.getArregloModificaion((ResultSet) conexion.Consulta(
+									"Select nombre,precio,marca,modelo,tipo, descripcion from productos where id_producto = "
+											+ clave));
+							salida = arr.length + 1;
+							op = Utileria.mostrarMenu(arr);
+							String campo;
+							boolean invalido = false;
+							switch (op) {
+							case 1:
+								do {
+									campo = Utileria.leerCadena("ingresa el nuevo nombre del producto");
+									if (!conexion.actualizar("productos", "nombre", campo, "id_producto",
+											String.valueOf(clave))) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+
+								} while (invalido);
+								break;
+
+							case 2:
+								do {
+									campo = Utileria.leerCadena("ingresa la Nueva Precio del Producto");
+									if (!conexion.actualizar("productos", "precio", campo, "id_producto",
+											String.valueOf(clave))) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+								} while (invalido);
+								break;
+
+							case 3:
+								do {
+									campo = Utileria.leerCadena("ingresa la Nueva Marca del Producto");
+									if (!conexion.actualizar("productos", "marca", campo, "id_producto",
+											String.valueOf(clave))) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+								} while (invalido);
+								break;
+
+							case 4:
+								do {
+									campo = Utileria.leerCadena("ingresa el nuevo Modelo del Producto");
+									if (!conexion.actualizar("productos", "modelo", campo, "id_producto",
+											String.valueOf(clave))) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+								} while (invalido);
+								break;
+
+							case 5:
+								do {
+									campo = Utileria.leerCadena("ingresa el nuevo Tipo del Producto");
+									if (!conexion.actualizar("productos", "tipo", campo, "id_producto",
+											String.valueOf(clave))) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+								} while (invalido);
+								break;
+
+							case 6:
+								do {
+									campo = Utileria.leerCadena("ingresa la Nueva Descripcion del Producto");
+									if (!conexion.actualizar("productos", "descripcion", campo, "id_producto",
+											String.valueOf(clave))) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+								} while (invalido);
+								break;
+
+							}
+
+						} while (op != salida);
+
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					}
+				} else
+					Utileria.escribir("El Producto no existe");
+			}
+		});
+		mnInventario.add(mntmEditarArticulo);
 		mnInventario.add(mntmBuscar);
 
 		scrollPane = new JScrollPane();
@@ -312,6 +505,57 @@ public class VistaPrincipalAdmin extends JFrame {
 			}
 		});
 		mnVenta.add(mntmBuscarVenta);
+
+		JMenuItem mntmContinuarVenta = new JMenuItem("Continuar Venta");
+		mntmContinuarVenta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int idVenta = Utileria.leerInt("Digite el ID de la Venta");
+				if (conexion.existe("ventas", "id_venta", String.valueOf(idVenta))) {
+					if (conexion.getCampo("ventas", "estado", "id_venta", String.valueOf(idVenta)).equals("Parcial")) {
+						int cant = Utileria.leerInt("ingrese el monto a depositar");
+						String consulta = "Select total, pagado, balance from ventas where id_venta = " + idVenta;
+						try {
+							ResultSet rs = (ResultSet) conexion.Consulta(consulta);
+							rs.next();
+							int balance = rs.getInt(1) - (cant + rs.getInt(2));
+							PreparedStatement ps;
+							if (balance <= 0)
+								ps = conexion.getPreparedStatement("UPDATE `ventas` SET `pagado` = '"
+										+ (cant + rs.getInt(2)) + "', estado ='Pagado', balance = " + 0
+										+ " WHERE `ventas`.`id_venta` = " + idVenta + "");
+							else
+								ps = conexion.getPreparedStatement(
+										"UPDATE `ventas` SET `pagado` = '" + (cant + rs.getInt(2)) + "', balance = "
+												+ balance + " WHERE `ventas`.`id_venta` = " + idVenta + "");
+							ps.executeUpdate();
+
+							Utileria.escribir("Monto depositado \nDinero Restante para Concluir la compra: " + balance);
+						} catch (SQLException e1) {
+							e1.printStackTrace();
+						}
+					} else
+						Utileria.escribir("La compra ya ha sido finalizada");
+
+				} else {
+					int op = JOptionPane.showConfirmDialog(null, "Venta no Encontrada\n Desea Buscarla?");
+
+					if (op == 0) {
+						new VentanaBusquedaGeneral(conexion, "ventas");
+					}
+				}
+
+			}
+		});
+		mnVenta.add(mntmContinuarVenta);
+
+		JMenuItem mntmListarVentasInconclusas = new JMenuItem("Listar Ventas Inconclusas");
+		mntmListarVentasInconclusas.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				tabla = "ventas";
+				llenarTablaa("SELECT * from ventas where estado = 'Parcial'", tabla);
+			}
+		});
+		mnVenta.add(mntmListarVentasInconclusas);
 		mnVenta.add(mntmListarVentas);
 
 		JMenu mnGestionDeclientes = new JMenu("Gestion deClientes");
@@ -336,10 +580,70 @@ public class VistaPrincipalAdmin extends JFrame {
 		});
 		mnGestionDeclientes.add(mntmBuscarCliente);
 
-		JMenuItem mntmBorrarCliente = new JMenuItem("Borrar Cliente");
-		mnGestionDeclientes.add(mntmBorrarCliente);
-
 		JMenuItem mntmModificarCliente = new JMenuItem("Modificar Cliente");
+		mntmModificarCliente.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+
+				int clave = Utileria.leerInt("ingrese el ID de el cliente a Modificar");
+				if (conexion.existe("Cliente", "id_cliente", String.valueOf(clave))) {
+					try {
+						int op;
+						int salida = 0;
+						do {
+							Object[] arr = conexion.getArregloModificaion((ResultSet) conexion.Consulta(
+									"Select nombre,direccion,telefono from cliente where id_cliente = " + clave));
+							salida = arr.length + 1;
+							op = Utileria.mostrarMenu(arr);
+							String campo;
+							boolean invalido = false;
+							switch (op) {
+							case 1:
+								do {
+									campo = Utileria.leerCadena("ingresa el nuevo nombre");
+									if (!conexion.actualizar("cliente", "nombre", campo, "id_cliente",
+											String.valueOf(clave))) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+
+								} while (invalido);
+								break;
+
+							case 2:
+								do {
+									campo = Utileria.leerCadena("ingresa la Nueva Direccion");
+									if (!conexion.actualizar("cliente", "direccion", campo, "id_cliente",
+											String.valueOf(clave))) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+								} while (invalido);
+								break;
+
+							case 3:
+								do {
+									campo = Utileria.leerCadena("ingresa el nuevo Telefono");
+									if (!conexion.actualizar("cliente", "telefono", campo, "id_cliente",
+											String.valueOf(clave))) {
+										invalido = true;
+										Utileria.escribir("Dato Invalido");
+									} else
+										invalido = false;
+								} while (invalido);
+								break;
+							}
+
+						} while (op != salida);
+
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+
+			}
+		});
 		mnGestionDeclientes.add(mntmModificarCliente);
 
 		JMenuItem mntmListarClientes = new JMenuItem("Listar Clientes");
@@ -379,11 +683,12 @@ public class VistaPrincipalAdmin extends JFrame {
 		}
 	}
 
-	public void llenarTablaa(String consulta) {
+	public void llenarTablaa(String consulta, String tabla) {
 		try {
 			Object[] cabezera = conexion.getCamposTabla(tabla);
 			Object[][] datos = conexion.getDatosTabla((ResultSet) conexion.Consulta(consulta));
 			table = new JTable(datos, cabezera);
+			table.getTableHeader().addMouseListener(new oyenteOrden());
 			scrollPane.setViewportView(table);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -404,8 +709,8 @@ public class VistaPrincipalAdmin extends JFrame {
 				consulta = "ORDER BY `" + name + "` DESC";
 				cambio = !cambio;
 			}
-			llenarTablaa("Select * from " + tabla + " " + consulta);
-			table.getTableHeader().addMouseListener(new oyenteOrden());
+			llenarTablaa("Select * from " + tabla + " " + consulta, tabla);
+
 		}
 
 	}

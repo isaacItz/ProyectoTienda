@@ -70,7 +70,7 @@ public class Utileria {
 		return true;
 	}
 
-	public static int mostrarMenu(String[] opciones) {
+	public static int mostrarMenu(Object[] opciones) {
 		String menuprincipal = "Menu Principal\n";
 		int i;
 		for (i = 0; i < opciones.length; i++) {
